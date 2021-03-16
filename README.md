@@ -6,7 +6,7 @@
 
 <p align="left"> <a href="https://github.com/ryo-ma/github-profile-trophy"><img src="https://github-profile-trophy.vercel.app/?username=tangobee" alt="tangobee" /></a> </p>
 
-<p align="left"> <a href="https://twitter.com/tango_bee" target="blank"><img src="https://img.shields.io/twitter/follow/tango_bee?logo=twitter&style=for-the-badge" alt="tango_bee" /></a> </p>
+<p align="left"> <a href="https://twitter.com/tango_bee" target="blank"><img src="https://img.shields.io/twitter/follow/tango_bee_?logo=twitter&style=for-the-badge" alt="tango_bee" /></a> </p>
 
 - 🔭 I’m currently working on [HackerMint](https://github.com/TangoBeee/HackerMint/)
 
