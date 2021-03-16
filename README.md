@@ -1,3 +1,4 @@
+[![MasterHead](https://cdn.discordapp.com/attachments/755439703322263603/821414550267756564/Background.png)
 <h1 align="center">Hi 👋, I'm Tango</h1>
 <h3 align="center">A passionate frontend developer from India</h3>
 
@@ -30,5 +31,5 @@
 
 <p>&nbsp;<img align="center" src="https://github-readme-stats.vercel.app/api?username=tangobee&show_icons=true&locale=en" alt="tangobee" /></p>
 
-<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=tangobee&" alt="tangobee" /></p>
+<p><img align="center" src="https://github-readme-streak-stats.herokuapp.com/?user=tangobee&" alt="tangobee" /></p> 
 
