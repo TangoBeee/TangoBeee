@@ -8,7 +8,7 @@
 
 <p align="left"> <a href="https://twitter.com/tango_bee" target="blank"><img src="https://img.shields.io/twitter/follow/tangobee?logo=twitter&style=for-the-badge" alt="tango_bee" /></a> </p>
 
-- 🔭 I’m currently working on [HackerMint](https://github.com/TangoBeee/HackerMint/)
+- 🔭 I’m currently working on [HuntMC](https://github.com/TangoBeee/HuntMC/)
 
 - 🌱 I’m currently learning **Django**
 
