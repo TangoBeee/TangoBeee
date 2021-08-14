@@ -1,4 +1,4 @@
-   [![MasterHead](https://cdn.discordapp.com/attachments/755439703322263603/821414550267756564/Background.png)
+   ![MasterHead](https://cdn.discordapp.com/attachments/755439703322263603/821414550267756564/Background.png)
 <h1 align="center">Hi 👋, I'm Tango</h1>
 <h3 align="center">A passionate frontend developer from India</h3>
 
