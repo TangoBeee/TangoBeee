@@ -10,7 +10,7 @@
 
 - 🔭 I’m currently working on [HuntMC](https://github.com/TangoBeee/HuntMC/)
 
-- 🌱 I’m currently learning **Django**
+- 🌱 I’m currently learning **Mern Stack**
 
 - 💬 Ask me about **Python3, JavaScript, CSS3 and HTML5**
 
