@@ -16,7 +16,7 @@ Here are some ideas to get you started:
 -->
 
 I'm a full stack software engineer 👨‍💻
-- 🔭 I’m currently working on my ~~own OS~~ own RPG type game.
+- 🔭 I’m currently working on my own ~~OS~~ RPG type game.
 - 🌱 I’m currently learning Linux System Administration, Networking.
 - 📫 How to reach me: by [email](mailto:querytango@gmail.com).
 
