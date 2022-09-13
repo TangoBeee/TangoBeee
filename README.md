@@ -2,9 +2,9 @@
 
 
 
-I'm a full stack software engineer 👨‍💻
-- 🔭 I’m currently working on my own ~~OS~~ RPG type [game](https://github.com/TangoBeee/age-of-empire-4-rpg).
-- 🌱 I’m currently learning Linux System Administration, Networking.
+I'm a backend developer 👨‍💻
+- 🔭 I’m currently working on my own ~~RPG type [game](https://github.com/TangoBeee/age-of-empire-4-rpg)~~.
+- 🌱 I’m currently learning Springboot, Sockets.
 - 📫 How to reach me: by [email](mailto:querytango@gmail.com).
 
 ![Tango's github stats](https://github-readme-stats.vercel.app/api?username=TangoBeee&count_private=true&show_icons=true&theme=dracula&hide=issues)
