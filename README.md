@@ -7,7 +7,7 @@
 
 ## <img src="wave.gif" width="50px" height="50px"></img> About Me
 
-- :credit_card: My full name is **Umesh Kumar** <img src="https://i.pinimg.com/originals/df/1a/ff/df1aff8395678d11b99b575f0e3b19d5.gif" width="400" align="right"/>
+- :credit_card: My full name is **Umesh Kumar** <img src="https://substackcdn.com/video/upload/e_loop,vs_40/a2gccwugbubdi1ldsrwg.gif" width="400" align="right"/>
 - :school: I'm currently in 2nd year at **Chandigarh University**
 - :books: My major is **Computer Science**
 - :earth_asia: I'm living now in **Mathura, India**
