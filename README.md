@@ -13,7 +13,7 @@
 - :earth_asia: I'm living now in **Mathura, India**
 - :sweat_smile: I'm a ~~newbie~~ Intermediate in coding :penguin:
 - :monocle_face: I'm interested in coding, staring at computer screen, and travelling
-- :sunglasses: My quote is ***"Degree is something which will only help you to open the door of interview room but skill will help you to crack interview"*** 
+- :sunglasses: My quote is ***"A Degree provides a foundation, but it's the skills and expertise that truly elevate one's career potential"*** 
 - :ok_hand: Fun fact: You don’t have to work in tech to use coding
 
 ## <img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif?cid=ecf05e47a0n3gi1bfqntqmob8g9aid1oyj2wr3ds3mg700bl&rid=giphy.gif" width="50px" height="50px"> Some Languages and Tools
