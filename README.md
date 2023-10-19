@@ -13,8 +13,8 @@
 - :earth_asia: I'm living now in **India**
 - :sweat_smile: I'm a ~~newbie~~ Intermediate in coding :penguin:
 - :monocle_face: I'm interested in coding, staring at computer screen, and travelling
-- :sunglasses: My quote is ***"A Degree provides a foundation, but it's the skills and expertise that truly elevate one's career potential"*** 
-- :ok_hand: Fun fact: You don’t have to work in tech to use coding
+- :sunglasses: My quote is ***"Shhhh...."*** 
+- :ok_hand: Fun fact: A fun fact doesn't have to be funny.
 
 ## <img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif?cid=ecf05e47a0n3gi1bfqntqmob8g9aid1oyj2wr3ds3mg700bl&rid=giphy.gif" width="50px" height="50px"> Some Languages and Tools
 ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white) ![JavaEE](https://img.shields.io/badge/javaee-%2300599C.svg?style=for-the-badge&logo=javaee&logoColor=white) ![Kotlin](https://img.shields.io/badge/kotlin-%23ED8B00.svg?style=for-the-badge&logo=kotlin&logoColor=white) ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white) ![C++](https://img.shields.io/badge/C++-5C2D91?style=for-the-badge&logo=c++&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-CC2927?style=for-the-badge&logo=mysql&logoColor=white) ![Apache Tomcat](https://img.shields.io/badge/apache_tomcat-%23D42029.svg?style=for-the-badge&logo=apachetomcat&logoColor=white)
@@ -32,7 +32,6 @@
 </div>
 <div align="center">
   <img src="https://github-readme-streak-stats.herokuapp.com/?user=TangoBeee&theme=algolia&background=0d1117&hide_border=true" />
-  <img src="https://activity-graph.herokuapp.com/graph?username=TangoBeee&theme=react-dark"/>
 </div>
 
 ## <img src='https://raw.githubusercontent.com/ShahriarShafin/ShahriarShafin/main/Assets/handshake.gif' width="50px" height="50px"> For More Information, Please Check Out or Connect Me Via
