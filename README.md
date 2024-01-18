@@ -8,20 +8,19 @@
 ## <img src="wave.gif" width="50px" height="50px"></img> About Me
 
 - :credit_card: My full name is **Umesh Kumar**(a.k.a. TangoBee) <img src="https://substackcdn.com/video/upload/e_loop,vs_40/a2gccwugbubdi1ldsrwg.gif" width="400" align="right"/>
-- :school: I'm currently in 2nd year at **Chandigarh University**
+- :school: I'm currently in my final year at **Chandigarh University**
 - :books: My major is **Computer Science**
-- :earth_asia: I'm living now in **India**
 - :sweat_smile: I'm a ~~newbie~~ Intermediate in coding :penguin:
 - :monocle_face: I'm interested in coding, staring at computer screen, and travelling
-- :sunglasses: My quote is ***"Shhhh...."*** 
-- :ok_hand: Fun fact: A fun fact doesn't have to be funny.
+- :sunglasses: My quote is ***"THERE'S NO BETTER TIME THAN MEOW!"*** 
+- :ok_hand: Fun fact: It’s all 0’s and 1’s
 
 ## <img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif?cid=ecf05e47a0n3gi1bfqntqmob8g9aid1oyj2wr3ds3mg700bl&rid=giphy.gif" width="50px" height="50px"> Some Languages and Tools
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white) ![JavaEE](https://img.shields.io/badge/javaee-%2300599C.svg?style=for-the-badge&logo=javaee&logoColor=white) ![Kotlin](https://img.shields.io/badge/kotlin-%23ED8B00.svg?style=for-the-badge&logo=kotlin&logoColor=white) ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white) ![C++](https://img.shields.io/badge/C++-5C2D91?style=for-the-badge&logo=c++&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-CC2927?style=for-the-badge&logo=mysql&logoColor=white) ![Apache Tomcat](https://img.shields.io/badge/apache_tomcat-%23D42029.svg?style=for-the-badge&logo=apachetomcat&logoColor=white)
+![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=java&logoColor=white) ![JavaEE](https://img.shields.io/badge/javaee-%2300599C.svg?style=for-the-badge&logo=javaee&logoColor=white) ![Kotlin](https://img.shields.io/badge/kotlin-%23ED8B00.svg?style=for-the-badge&logo=kotlin&logoColor=white) ![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white) ![C++](https://img.shields.io/badge/C++-5C2D91?style=for-the-badge&logo=c++&logoColor=white) ![Apache Tomcat](https://img.shields.io/badge/apache_tomcat-%23D42029.svg?style=for-the-badge&logo=apachetomcat&logoColor=white)
 
-![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![Bootstrap](https://img.shields.io/badge/bootstrap-%23563D7C.svg?style=for-the-badge&logo=bootstrap&logoColor=white) ![Heroku](https://img.shields.io/badge/heroku-%23430098.svg?style=for-the-badge&logo=heroku&logoColor=white)
+![ReactJS](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white) ![ExpressJS](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge) ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E) ![Bootstrap](https://img.shields.io/badge/bootstrap-%23563D7C.svg?style=for-the-badge&logo=bootstrap&logoColor=white) ![Heroku](https://img.shields.io/badge/heroku-%23430098.svg?style=for-the-badge&logo=heroku&logoColor=white)
 
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white) 
+![MySQL](https://img.shields.io/badge/MySQL-CC2927?style=for-the-badge&logo=mysql&logoColor=white) ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 
 ![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![IntelliJ](https://img.shields.io/badge/IntelliJ-5C2D91.svg?style=for-the-badge&logo=intellijidea&logoColor=white) ![Eclipse](https://img.shields.io/badge/eclipse-1B6AC6.svg?style=for-the-badge&logo=eclipse&logoColor=white) ![Android Studio](https://img.shields.io/badge/android_studio-1B6AC6.svg?style=for-the-badge&logo=androidstudio&logoColor=white) 
 
