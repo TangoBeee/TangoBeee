@@ -7,9 +7,7 @@
 
 ## <img src="wave.gif" width="50px" height="50px"></img> About Me
 
-- :credit_card: My full name is **Umesh Kumar**(a.k.a. TangoBee) <img src="https://substackcdn.com/video/upload/e_loop,vs_40/a2gccwugbubdi1ldsrwg.gif" width="400" align="right"/>
-- :school: I'm currently in my final year at **Chandigarh University**
-- :books: My major is **Computer Science**
+- :credit_card: I'm TangoBee <img src="https://substackcdn.com/video/upload/e_loop,vs_40/a2gccwugbubdi1ldsrwg.gif" width="400" align="right"/>
 - :sweat_smile: I'm a ~~newbie~~ Intermediate in coding :penguin:
 - :monocle_face: I'm interested in coding, staring at computer screen, and travelling
 - :sunglasses: My quote is ***"THERE'S NO BETTER TIME THAN MEOW!"*** 
