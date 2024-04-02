@@ -39,14 +39,6 @@
     <img align="center" alt="TangoBee | Gmail" width="26px" src="Gmail.svg" />
   </a> &nbsp;&nbsp;
   
-  <a href="https://www.linkedin.com/in/helloumesh/" target="_blank">
-    <img align="center" alt="TienHuynh-TN | Linkedin" width="24px" src="Linkedin.svg" />
-  </a> &nbsp;&nbsp;
-  
-  <a href="https://www.instagram.com/TangoBeee/" target="_blank">
-    <img align="center" alt="TangoBee | Instagram" width="24px" src="Instagram.svg" />
-  </a> &nbsp;&nbsp;
-  
   <a href="https://profile-summary-for-github.herokuapp.com/user/TangoBeee" target="_blank">
     <img align="center" alt="TangoBee | GitHub" width="26px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Github-desktop-logo-symbol.svg/1024px-Github-desktop-logo-symbol.svg.png" />
   </a> &nbsp;&nbsp;
