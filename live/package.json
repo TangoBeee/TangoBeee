@@ -1,5 +1,5 @@
 {
-  "name": "tangobee-arcade",
+  "name": "tangobee-live",
   "private": true,
   "scripts": {
     "dev": "wrangler dev",

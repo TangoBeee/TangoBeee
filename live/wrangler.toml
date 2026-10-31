@@ -1,0 +1,4 @@
+name = "tangobee-live"
+main = "src/worker.js"
+compatibility_date = "2025-09-01"
+routes = [{ pattern = "live.tangobee.dev", custom_domain = true }]
