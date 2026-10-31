@@ -17,8 +17,8 @@ const MINUTES = 120;
 const FONT = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
 const AURORA = "#2BD98F";
 const THEMES = {
-  light: { ink: "#1F2328", muted: "#8C959F", accent: "#0FA968" },
-  dark: { ink: "#E6EDF3", muted: "#6E7681", accent: AURORA },
+  light: { ink: "#1F2328", muted: "#8C959F", accent: "#0FA968", glow: "#7DF5C0" },
+  dark: { ink: "#E6EDF3", muted: "#6E7681", accent: AURORA, glow: "#E9FFF5" },
 };
 const fmt = (n, d = 0) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
@@ -90,9 +90,31 @@ function rng(seed) {
   };
 }
 
+function perlin(rand) {
+  const p = Array.from({ length: 256 }, (_, i) => i);
+  for (let i = 255; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
+  const perm = [...p, ...p];
+  const fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+  const grad = (h, x, y) => ((h & 1) ? -x : x) + ((h & 2) ? -y : y);
+  return (x, y) => {
+    const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+    x -= Math.floor(x); y -= Math.floor(y);
+    const u = fade(x), v = fade(y), a = perm[X] + Y, b = perm[X + 1] + Y;
+    const l1 = grad(perm[a], x, y) + u * (grad(perm[b], x - 1, y) - grad(perm[a], x, y));
+    const l2 = grad(perm[a + 1], x, y - 1) + u * (grad(perm[b + 1], x - 1, y - 1) - grad(perm[a + 1], x, y - 1));
+    return l1 + v * (l2 - l1);
+  };
+}
+
+function moonPhase(t) {
+  const synodic = 29.530588853, epoch = Date.UTC(2000, 0, 6, 18, 14);
+  const age = ((((t - epoch) / 86400000) % synodic) + synodic) % synodic;
+  return { phase: age / synodic, lit: (1 - Math.cos((2 * Math.PI * age) / synodic)) / 2 };
+}
+
 function draw({ seed, field, theme }) {
   const rand = rng(seed);
-  const { ink, accent } = THEMES[theme];
+  const { ink, accent, glow } = THEMES[theme];
   const s = field.series, n = s.length;
 
   // field sample at any x: interpolate the vector (not the angle) to avoid wrap-around jumps
@@ -101,8 +123,18 @@ function draw({ seed, field, theme }) {
     const lerp = (k) => s[i][k] + (s[i + 1][k] - s[i][k]) * t;
     return { by: lerp("by"), bz: lerp("bz"), bt: lerp("bt") };
   };
-  const angle = (x) => { const { by, bz } = sample(x); return Math.atan2(-bz, by); }; // north (Bz>0) is up
-  const sepAt = (x) => 9.5 - clamp((sample(x).bt - 3) / 15) * 5.5;                   // stronger = tighter
+  // the real field sets the drift at each minute (north is up); organic swirls ride on top of it
+  const noise = perlin(rand), ox = rand() * 100, oy = rand() * 100, f = 0.0035;
+  const angle = (x, y) => {
+    const { by, bz } = sample(x);
+    const swirl = noise(x * f + ox, y * f + oy) + 0.35 * noise(x * f * 3.1 + oy, y * f * 3.1 + ox);
+    return Math.atan2(-bz, by) + swirl * Math.PI * 1.6;
+  };
+
+  // the moon, in its real phase; lines flow around it
+  const moon = { x: M + 80 + rand() * (W - 2 * M - 160), y: M + 36 + rand() * 60, r: 20 };
+  const blocked = (x, y) => Math.hypot(x - moon.x, y - moon.y) < moon.r + 9;
+  const sepAt = (x) => 9 - clamp((sample(x).bt - 3) / 15) * 4.5; // stronger field = tighter lines
 
   const cell = 4, cols = Math.ceil(W / cell), grid = new Map();
   const key = (x, y) => Math.floor(x / cell) + Math.floor(y / cell) * cols;
@@ -120,9 +152,9 @@ function draw({ seed, field, theme }) {
   const trace = (x, y, dir) => {
     const pts = [];
     for (let k = 0; k < 400; k++) {
-      const a = angle(x);
+      const a = angle(x, y);
       x += Math.cos(a) * step * dir; y += Math.sin(a) * step * dir;
-      if (!inside(x, y) || near(x, y, sepAt(x) * 0.5)) break;
+      if (!inside(x, y) || blocked(x, y) || near(x, y, sepAt(x) * 0.5)) break;
       pts.push([x, y]);
     }
     return pts;
@@ -131,23 +163,25 @@ function draw({ seed, field, theme }) {
   const lines = [];
   for (let tries = 0; tries < 4000; tries++) {
     const x = M + rand() * (W - 2 * M), y = M + rand() * (BOTTOM - M);
-    if (near(x, y, sepAt(x))) continue;
+    if (blocked(x, y) || near(x, y, sepAt(x))) continue;
     const pts = [...trace(x, y, -1).reverse(), [x, y], ...trace(x, y, 1)];
     if (pts.length < 10) continue;
     lines.push(pts);
     for (const p of pts) { const k = key(p[0], p[1]); (grid.get(k) || grid.set(k, []).get(k)).push(p); }
   }
 
-  // split each line into runs of northward / southward field; southward runs get the accent
+  // split lines into runs of northward / southward field. About a third of the lines turn
+  // green through southward stretches, so the accent stays a highlight but still marks them.
   const runs = [];
   for (const pts of lines) {
+    const carries = rand() < 0.3;
     let cur = [pts[0]], south = sample(pts[0][0]).bz < 0;
     for (let k = 1; k < pts.length; k++) {
       const sk = sample(pts[k][0]).bz < 0;
       cur.push(pts[k]);
-      if (sk !== south) { runs.push({ pts: cur, south }); cur = [pts[k]]; south = sk; }
+      if (sk !== south) { runs.push({ pts: cur, south: south && carries }); cur = [pts[k]]; south = sk; }
     }
-    if (cur.length > 1) runs.push({ pts: cur, south });
+    if (cur.length > 1) runs.push({ pts: cur, south: south && carries });
   }
 
   // reveal left-to-right: the past is drawn first, "now" arrives last
@@ -158,9 +192,19 @@ function draw({ seed, field, theme }) {
     const d = "M" + thin.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L");
     const begin = ((minX - M) / (W - 2 * M)) * 3.4 + rand() * 0.3;
     const dur = 0.5 + thin.length / 80;
-    return `<path d="${d}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke="${south ? accent : ink}" stroke-width="${south ? 1.3 : 0.9}" stroke-opacity="${south ? 0.95 : 0.6}"><animate attributeName="stroke-dashoffset" from="1" to="0" begin="${begin.toFixed(2)}s" dur="${dur.toFixed(2)}s" fill="freeze" calcMode="spline" keySplines=".4 0 .2 1" keyTimes="0;1"/></path>`;
+    const line = `<path d="${d}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke="${south ? accent : ink}" stroke-width="${south ? 1.3 : 0.9}" stroke-opacity="${south ? 0.95 : 0.6}"><animate attributeName="stroke-dashoffset" from="1" to="0" begin="${begin.toFixed(2)}s" dur="${dur.toFixed(2)}s" fill="freeze" calcMode="spline" keySplines=".4 0 .2 1" keyTimes="0;1"/></path>`;
+    if (!south) return line;
+    // once drawn, a glint of light keeps travelling along each southward line, forever
+    const glint = `<path d="${d}" pathLength="1" stroke-dasharray=".07 .93" stroke-dashoffset="1" stroke="${glow}" stroke-width="1.8" opacity="0"><set attributeName="opacity" to="1" begin="${(begin + dur).toFixed(2)}s"/><animate attributeName="stroke-dashoffset" from="1" to="0" begin="${(begin + dur).toFixed(2)}s" dur="${(2.5 + rand() * 3).toFixed(2)}s" repeatCount="indefinite"/></path>`;
+    return line + glint;
   });
-  return paths.join("");
+  const { phase, lit } = moonPhase(Date.now());
+  const { x: mx, y: my, r } = moon, waxing = phase < 0.5, tx = Math.abs(1 - 2 * lit) * r;
+  const outer = waxing ? 1 : 0, inner = lit > 0.5 ? (waxing ? 1 : 0) : (waxing ? 0 : 1);
+  const moonSvg = `<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="3.4s" dur="1.6s" fill="freeze"/>
+    <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="${r}" stroke="${ink}" stroke-opacity=".35" stroke-width=".9"/>
+    <path d="M${mx} ${my - r}A${r} ${r} 0 0 ${outer} ${mx} ${my + r}A${tx.toFixed(2)} ${r} 0 0 ${inner} ${mx} ${my - r}Z" fill="${ink}" fill-opacity=".85"/></g>`;
+  return paths.join("") + moonSvg;
 }
 
 function render(edition, field, wind, theme) {
