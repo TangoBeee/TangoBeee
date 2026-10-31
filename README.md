@@ -1,7 +1,4 @@
-<div align="center">
-
-<img src="https://live.tangobee.dev/link.svg" width="100%" alt="TANGOBEE // DEEP SPACE LINK — live Jupiter–Earth distance, real-time space weather and contribution telemetry">
-
-<sub>this isn't a screenshot. every time this page loads, a tiny cloudflare worker computes where the planets are <i>right now</i>,<br>pulls live solar wind, geomagnetic and x-ray data from NOAA, reads my contribution graph, and draws this frame just for you.</sub>
-
-</div>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://live.tangobee.dev/art.svg?theme=dark">
+  <img src="https://live.tangobee.dev/art.svg?theme=light" width="100%" alt="a one-of-one generative drawing, made live for each visitor from the solar wind, the moon and today's commits">
+</picture>
