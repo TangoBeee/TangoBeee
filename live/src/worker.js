@@ -1,18 +1,24 @@
-// tangobee — a one-of-one artwork for every visitor.
+// tangobee — the sun's magnetic field, drawn live for every visitor.
 //
-// Each profile view gets a new numbered edition: a plotter-style flow field whose shape is
-// driven by what is happening right now — NOAA solar wind (turbulence), the Kp index
-// (density), the real moon phase, the hour (accent colour) and today's commits.
+// Each view is a new numbered edition. The lines are streamlines of the real interplanetary
+// magnetic field (NOAA real-time solar wind) over the last two hours:
+//   x axis     time: left edge = 2h ago, right edge = now (one column per minute)
+//   direction  the field's clock angle as seen from the sun (By sideways, Bz up/down)
+//   density    field strength Bt: stronger field = tighter lines
+//   accent     southward field (Bz < 0), when it can couple with Earth's and drive aurora
 //
 //   GET /art.svg?theme=light|dark
 import { DurableObject } from "cloudflare:workers";
 
 const USER = "TangoBeee";
 const W = 880, H = 400, M = 48; // canvas + margin
+const BOTTOM = H - M - 30;      // drawing area ends here; time axis + caption below
+const MINUTES = 120;
 const FONT = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
+const AURORA = "#2BD98F";
 const THEMES = {
-  light: { ink: "#1F2328", muted: "#8C959F" },
-  dark: { ink: "#E6EDF3", muted: "#6E7681" },
+  light: { ink: "#1F2328", muted: "#8C959F", accent: "#0FA968" },
+  dark: { ink: "#E6EDF3", muted: "#6E7681", accent: AURORA },
 };
 const fmt = (n, d = 0) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
@@ -29,64 +35,51 @@ export class Editions extends DurableObject {
 }
 
 // ======================================================================================
-// live inputs (each upstream cached at the edge for a few minutes)
+// live data: NOAA SWPC real-time solar wind (cached at the edge for a minute)
 // ======================================================================================
-async function getJSON(url, ttl) {
-  const r = await fetch(url, { cf: { cacheTtl: ttl, cacheEverything: true }, headers: { "user-agent": "tangobee-art" } });
+async function getJSON(url) {
+  const r = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true }, headers: { "user-agent": "tangobee-art" } });
   if (!r.ok) throw new Error(`${url} ${r.status}`);
   return r.json();
 }
 
-async function solar() {
-  const [wind, kp] = await Promise.allSettled([
-    getJSON("https://services.swpc.noaa.gov/json/rtsw/rtsw_wind_1m.json", 120),
-    getJSON("https://services.swpc.noaa.gov/json/planetary_k_index_1m.json", 120),
-  ]);
-  const out = {};
-  if (wind.status === "fulfilled") {
-    const latest = wind.value.filter((d) => d.proton_speed != null).sort((a, b) => (a.time_tag < b.time_tag ? 1 : -1))[0];
-    if (latest) out.wind = latest.proton_speed;
-  }
-  if (kp.status === "fulfilled" && kp.value.length) {
-    const k = kp.value[kp.value.length - 1];
-    out.kp = k.estimated_kp ?? k.kp_index;
-  }
-  return out;
+// one reading per minute, preferring the spacecraft NOAA currently marks as active
+function perMinute(rows, ok) {
+  const byMinute = {};
+  for (const d of rows) if (ok(d) && (!byMinute[d.time_tag] || d.active)) byMinute[d.time_tag] = d;
+  return Object.values(byMinute).sort((a, b) => (a.time_tag < b.time_tag ? -1 : 1));
 }
 
-async function commitsToday() {
-  const r = await fetch(`https://github.com/users/${USER}/contributions`, {
-    cf: { cacheTtl: 600, cacheEverything: true },
-    headers: { "user-agent": "Mozilla/5.0 (tangobee-art)" },
+async function magneticField() {
+  const rows = perMinute(await getJSON("https://services.swpc.noaa.gov/json/rtsw/rtsw_mag_1m.json"),
+    (d) => d.by_gsm != null && d.bz_gsm != null && d.bt != null);
+  if (rows.length < 20) throw new Error("not enough field data");
+  const last = new Date(rows[rows.length - 1].time_tag + "Z").getTime();
+  // resample onto exactly MINUTES columns ending at the newest reading; fill gaps from neighbours
+  const at = new Map(rows.map((d) => [new Date(d.time_tag + "Z").getTime(), d]));
+  const series = [];
+  let prev = rows.find((d) => new Date(d.time_tag + "Z").getTime() >= last - MINUTES * 60000) || rows[0];
+  for (let i = MINUTES - 1; i >= 0; i--) {
+    const d = at.get(last - i * 60000) || prev;
+    series.push({ by: d.by_gsm, bz: d.bz_gsm, bt: d.bt });
+    prev = d;
+  }
+  // a little smoothing so minute-to-minute jitter reads as flow, not noise
+  const smooth = series.map((_, i) => {
+    const win = series.slice(Math.max(0, i - 3), i + 4);
+    const avg = (k) => win.reduce((s, d) => s + d[k], 0) / win.length;
+    return { by: avg("by"), bz: avg("bz"), bt: avg("bt") };
   });
-  if (!r.ok) throw new Error(`contributions ${r.status}`);
-  const html = await r.text();
-  const dateOf = {};
-  for (const m of html.matchAll(/data-date="(\d{4}-\d\d-\d\d)"[^>]*?id="([^"]+)"/g)) dateOf[m[2]] = m[1];
-  let last = null;
-  for (const m of html.matchAll(/<tool-tip[^>]*for="([^"]+)"[^>]*>\s*(No|\d+) contributions? on/g)) {
-    const date = dateOf[m[1]];
-    if (date && (!last || date > last.date)) last = { date, n: m[2] === "No" ? 0 : +m[2] };
-  }
-  return last ? last.n : 0;
+  return { series: smooth, now: series[series.length - 1], at: new Date(last) };
 }
 
-function moonPhase(t) {
-  const synodic = 29.530588853, epoch = Date.UTC(2000, 0, 6, 18, 14);
-  const age = ((((t - epoch) / 86400000) % synodic) + synodic) % synodic;
-  return { phase: age / synodic, lit: (1 - Math.cos((2 * Math.PI * age) / synodic)) / 2 };
-}
-
-function accentFor(hour) {
-  if (hour < 5) return "#5B8CFF";   // night
-  if (hour < 9) return "#FF7A59";   // dawn
-  if (hour < 16) return "#E8A400";  // day
-  if (hour < 20) return "#FF4D8D";  // dusk
-  return "#8B6CFF";                 // late
+async function solarWindSpeed() {
+  const rows = perMinute(await getJSON("https://services.swpc.noaa.gov/json/rtsw/rtsw_wind_1m.json"), (d) => d.proton_speed != null);
+  return rows.length ? rows[rows.length - 1].proton_speed : null;
 }
 
 // ======================================================================================
-// the drawing: evenly-spaced streamlines through a Perlin flow field
+// the drawing: evenly-spaced streamlines through the measured field
 // ======================================================================================
 function rng(seed) {
   return () => {
@@ -97,39 +90,21 @@ function rng(seed) {
   };
 }
 
-function perlin(rand) {
-  const p = Array.from({ length: 256 }, (_, i) => i);
-  for (let i = 255; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [p[i], p[j]] = [p[j], p[i]]; }
-  const perm = [...p, ...p];
-  const fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
-  const grad = (h, x, y) => ((h & 1) ? -x : x) + ((h & 2) ? -y : y);
-  return (x, y) => {
-    const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
-    x -= Math.floor(x); y -= Math.floor(y);
-    const u = fade(x), v = fade(y), a = perm[X] + Y, b = perm[X + 1] + Y;
-    const l1 = grad(perm[a], x, y) + u * (grad(perm[b], x - 1, y) - grad(perm[a], x, y));
-    const l2 = grad(perm[a + 1], x, y - 1) + u * (grad(perm[b + 1], x - 1, y - 1) - grad(perm[a + 1], x, y - 1));
-    return l1 + v * (l2 - l1);
-  };
-}
-
-function draw({ seed, wind, kp, today, now, theme }) {
+function draw({ seed, field, theme }) {
   const rand = rng(seed);
-  const noise = perlin(rand);
-  const turbulence = clamp(((wind ?? 400) - 300) / 450);
-  const storm = clamp((kp ?? 2) / 9);
-  const freq = 0.0016 + turbulence * 0.0032;
-  const sep = 8.5 - storm * 4;           // calmer sky = airier drawing
-  const step = 2.4, maxSteps = 260;
-  const ox = rand() * 100, oy = rand() * 100;
-  const angle = (x, y) =>
-    noise(x * freq + ox, y * freq + oy) * Math.PI * 2.2 + noise(x * freq * 3.1 + oy, y * freq * 3.1 + ox) * Math.PI * (0.25 + storm * 0.6);
+  const { ink, accent } = THEMES[theme];
+  const s = field.series, n = s.length;
 
-  // the moon sits somewhere in the upper half; lines flow around it
-  const moon = { x: M + 80 + rand() * (W - 2 * M - 160), y: M + 40 + rand() * 70, r: 22 };
-  const blocked = (x, y) => Math.hypot(x - moon.x, y - moon.y) < moon.r + sep * 1.2;
+  // field sample at any x: interpolate the vector (not the angle) to avoid wrap-around jumps
+  const sample = (x) => {
+    const f = clamp((x - M) / (W - 2 * M)) * (n - 1), i = Math.min(n - 2, Math.floor(f)), t = f - i;
+    const lerp = (k) => s[i][k] + (s[i + 1][k] - s[i][k]) * t;
+    return { by: lerp("by"), bz: lerp("bz"), bt: lerp("bt") };
+  };
+  const angle = (x) => { const { by, bz } = sample(x); return Math.atan2(-bz, by); }; // north (Bz>0) is up
+  const sepAt = (x) => 9.5 - clamp((sample(x).bt - 3) / 15) * 5.5;                   // stronger = tighter
 
-  const cell = sep, cols = Math.ceil(W / cell), grid = new Map();
+  const cell = 4, cols = Math.ceil(W / cell), grid = new Map();
   const key = (x, y) => Math.floor(x / cell) + Math.floor(y / cell) * cols;
   const near = (x, y, d) => {
     const cx = Math.floor(x / cell), cy = Math.floor(y / cell), r = Math.ceil(d / cell);
@@ -139,77 +114,85 @@ function draw({ seed, wind, kp, today, now, theme }) {
     }
     return false;
   };
-  const inside = (x, y) => x > M && x < W - M && y > M && y < H - M - 22;
+  const inside = (x, y) => x > M && x < W - M && y > M && y < BOTTOM;
 
+  const step = 2.2;
   const trace = (x, y, dir) => {
     const pts = [];
-    for (let s = 0; s < maxSteps; s++) {
-      const a = angle(x, y);
+    for (let k = 0; k < 400; k++) {
+      const a = angle(x);
       x += Math.cos(a) * step * dir; y += Math.sin(a) * step * dir;
-      if (!inside(x, y) || blocked(x, y) || near(x, y, sep * 0.55)) break;
+      if (!inside(x, y) || near(x, y, sepAt(x) * 0.5)) break;
       pts.push([x, y]);
     }
     return pts;
   };
 
   const lines = [];
-  for (let tries = 0; tries < 2600; tries++) {
-    const x = M + rand() * (W - 2 * M), y = M + rand() * (H - 2 * M - 22);
-    if (!inside(x, y) || blocked(x, y) || near(x, y, sep)) continue;
+  for (let tries = 0; tries < 4000; tries++) {
+    const x = M + rand() * (W - 2 * M), y = M + rand() * (BOTTOM - M);
+    if (near(x, y, sepAt(x))) continue;
     const pts = [...trace(x, y, -1).reverse(), [x, y], ...trace(x, y, 1)];
-    if (pts.length < 14) continue;
+    if (pts.length < 10) continue;
     lines.push(pts);
     for (const p of pts) { const k = key(p[0], p[1]); (grid.get(k) || grid.set(k, []).get(k)).push(p); }
   }
 
-  // accent: one line per commit today (at least one), chosen among the longest
-  const accent = accentFor(now.getUTCHours());
-  const byLength = lines.map((l, i) => [l.length, i]).sort((a, b) => b[0] - a[0]);
-  const accented = new Set(byLength.slice(0, clamp(today, 1, 14)).map(([, i]) => i));
+  // split each line into runs of northward / southward field; southward runs get the accent
+  const runs = [];
+  for (const pts of lines) {
+    let cur = [pts[0]], south = sample(pts[0][0]).bz < 0;
+    for (let k = 1; k < pts.length; k++) {
+      const sk = sample(pts[k][0]).bz < 0;
+      cur.push(pts[k]);
+      if (sk !== south) { runs.push({ pts: cur, south }); cur = [pts[k]]; south = sk; }
+    }
+    if (cur.length > 1) runs.push({ pts: cur, south });
+  }
 
-  // reveal left-to-right like a plotter pass
-  const order = lines.map((l, i) => [Math.min(...l.map((p) => p[0])), i]).sort((a, b) => a[0] - b[0]);
-  const { ink } = THEMES[theme];
-  const paths = order.map(([minX, i]) => {
-    const pts = lines[i].filter((_, k, arr) => k % 2 === 0 || k === arr.length - 1);
-    const d = "M" + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L");
-    const begin = ((minX - M) / (W - 2 * M)) * 3.2 + rand() * 0.4;
-    const dur = 0.8 + pts.length / 90;
-    const a = accented.has(i);
-    return `<path d="${d}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke="${a ? accent : ink}" stroke-width="${a ? 1.6 : 0.9}" stroke-opacity="${a ? 1 : 0.62}"><animate attributeName="stroke-dashoffset" from="1" to="0" begin="${begin.toFixed(2)}s" dur="${dur.toFixed(2)}s" fill="freeze" calcMode="spline" keySplines=".4 0 .2 1" keyTimes="0;1"/></path>`;
+  // reveal left-to-right: the past is drawn first, "now" arrives last
+  const paths = runs.map(({ pts, south }) => {
+    const thin = pts.filter((_, k, arr) => k % 2 === 0 || k === arr.length - 1);
+    if (thin.length < 2) return "";
+    const minX = Math.min(...thin.map((p) => p[0]));
+    const d = "M" + thin.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L");
+    const begin = ((minX - M) / (W - 2 * M)) * 3.4 + rand() * 0.3;
+    const dur = 0.5 + thin.length / 80;
+    return `<path d="${d}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" stroke="${south ? accent : ink}" stroke-width="${south ? 1.3 : 0.9}" stroke-opacity="${south ? 0.95 : 0.6}"><animate attributeName="stroke-dashoffset" from="1" to="0" begin="${begin.toFixed(2)}s" dur="${dur.toFixed(2)}s" fill="freeze" calcMode="spline" keySplines=".4 0 .2 1" keyTimes="0;1"/></path>`;
   });
-
-  // real moon phase: lit part is a semicircle plus an elliptical terminator
-  const { phase, lit } = moonPhase(now.getTime());
-  const { x: mx, y: my, r } = moon;
-  const waxing = phase < 0.5;
-  const tx = Math.abs(1 - 2 * lit) * r;
-  const outer = waxing ? 1 : 0, inner = lit > 0.5 ? (waxing ? 1 : 0) : (waxing ? 0 : 1);
-  const litPath = `M${mx} ${my - r}A${r} ${r} 0 0 ${outer} ${mx} ${my + r}A${tx.toFixed(2)} ${r} 0 0 ${inner} ${mx} ${my - r}Z`;
-  const moonSvg = `<g opacity="0"><animate attributeName="opacity" from="0" to="1" begin="3.4s" dur="1.6s" fill="freeze"/>
-    <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="${r}" fill="none" stroke="${ink}" stroke-opacity=".35" stroke-width=".9"/>
-    <path d="${litPath}" fill="${ink}" fill-opacity=".85"/></g>`;
-
-  return { paths: paths.join(""), moonSvg, accent, lit, count: lines.length };
+  return paths.join("");
 }
 
-function render(edition, inputs, theme) {
-  const now = new Date();
-  const art = draw({ seed: edition * 2654435761, ...inputs, now, theme });
-  const { muted } = THEMES[theme];
-  const parts = [
-    inputs.wind != null && `solar wind ${fmt(inputs.wind)} km/s`,
-    inputs.kp != null && `kp ${fmt(inputs.kp, 1)}`,
-    `moon ${Math.round(art.lit * 100)}%`,
-    `${inputs.today} commit${inputs.today === 1 ? "" : "s"} today`,
-  ].filter(Boolean);
-  const caption = `<g opacity="0" font-size="10" fill="${muted}"><animate attributeName="opacity" from="0" to="1" begin="4s" dur="1.5s" fill="freeze"/>
-    <text x="${M}" y="${H - M + 18}">tangobee — № ${fmt(edition)} · drawn for you at ${now.toISOString().slice(11, 19)} UTC</text>
-    <text x="${W - M}" y="${H - M + 18}" text-anchor="end">${parts.join(" · ")}</text>
-    <circle cx="${W - M - parts.join(" · ").length * 6.02 - 10}" cy="${H - M + 14.5}" r="2.5" fill="${art.accent}"/></g>`;
+function render(edition, field, wind, theme) {
+  const { ink, muted, accent } = THEMES[theme];
+  const fade = (begin) => `<animate attributeName="opacity" from="0" to="1" begin="${begin}s" dur="1.5s" fill="freeze"/>`;
+  const now = field.now;
+  const dirWord = now.bz < 0 ? "south" : "north";
+  const right = [
+    `now ${fmt(now.bt, 1)} nT, pointing ${dirWord}`,
+    wind != null && `${fmt(wind)} km/s`,
+  ].filter(Boolean).join(" · ");
+  const axisY = BOTTOM + 12;
+  const tick = (x, label, anchor) =>
+    `<path d="M${x} ${axisY - 3}v6" stroke="${ink}" stroke-opacity=".3"/><text x="${x}" y="${axisY + 14}" text-anchor="${anchor}">${label}</text>`;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}" fill="none" stroke-linecap="round" stroke-linejoin="round">
-<g>${art.paths}</g>${art.moonSvg}${caption}
+<g>${draw({ seed: edition * 2654435761, field, theme })}</g>
+<g opacity="0" font-size="9" fill="${muted}">${fade(0.2)}
+  <path d="M${M} ${axisY}H${W - M}" stroke="${ink}" stroke-opacity=".18"/>
+  ${tick(M, "−2h", "start")}${tick(W / 2, "−1h", "middle")}${tick(W - M, `now · ${field.at.toISOString().slice(11, 16)} UTC`, "end")}
+</g>
+<g opacity="0" font-size="10" fill="${muted}">${fade(3.8)}
+  <text x="${M}" y="${H - 14}">tangobee #${fmt(edition)} · the sun's magnetic field passing earth</text>
+  <text x="${W - M}" y="${H - 14}" text-anchor="end"><tspan fill="${accent}">━</tspan> southward (aurora-friendly) · ${right}</text>
+</g>
 </svg>`;
+}
+
+function offline(theme) {
+  const { muted } = THEMES[theme];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="${FONT}">
+<text x="${W / 2}" y="${H / 2}" text-anchor="middle" font-size="11" fill="${muted}">the spacecraft are quiet right now — the field will be drawn on your next visit</text></svg>`;
 }
 
 export default {
@@ -217,12 +200,9 @@ export default {
     const url = new URL(req.url);
     if (url.pathname !== "/art.svg") return Response.redirect(`https://github.com/${USER}`, 302);
     const theme = url.searchParams.get("theme") === "dark" ? "dark" : "light";
-    const [edition, sun, today] = await Promise.all([
-      env.EDITIONS.get(env.EDITIONS.idFromName("editions")).next(),
-      solar().catch(() => ({})),
-      commitsToday().catch(() => 0),
-    ]);
-    return new Response(render(edition, { ...sun, today }, theme), {
+    const [field, wind] = await Promise.all([magneticField().catch(() => null), solarWindSpeed().catch(() => null)]);
+    const body = field ? render(await env.EDITIONS.get(env.EDITIONS.idFromName("editions")).next(), field, wind, theme) : offline(theme);
+    return new Response(body, {
       headers: {
         "content-type": "image/svg+xml; charset=utf-8",
         "cache-control": "no-cache, no-store, must-revalidate, max-age=0",
